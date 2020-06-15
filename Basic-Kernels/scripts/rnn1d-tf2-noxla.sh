@@ -12,7 +12,6 @@ export PROFILER='cupy'
 #enalbe XLA or not, 'xla' or 'noxla'
 export enable_xla='noxla'
 
-#export TF_XLA_FLAGS="--tf_xla_auto_jit=2"
 export XLA_FLAGS=--xla_gpu_cuda_data_dir=${CUDA_HOME}
 export CUDA_DIR=${CUDA_HOME}
 
@@ -30,7 +29,7 @@ run_dir=$SCRATCH/tf_cnn_kernels_nsight/Ker-rnn1d-tf2-noxla-$SLURM_JOBID/
 mkdir -p ${run_dir}
 
 #copy relevant files
-script_dir=/global/cfs/cdirs/nstaff/cjyang/study/Yunsong/tf-perf-kernels/
+script_dir=/where BasicKernels is/
 script="rnn1d_tf2.py"
 cp ${script_dir}/python/$script ${run_dir}/
 cp $0 ${run_dir}/rnn1d-tf2-$enable_xla.sh
@@ -39,32 +38,36 @@ cp $0 ${run_dir}/rnn1d-tf2-$enable_xla.sh
 cd ${run_dir}
 
 #net_params
-net_params="1x2x32,3"
+net_params="64x64x16,3 128x64x16,3 256x64x16,3 \
+64x128x16,3 128x256x16,3 256x64x4,3 \
+64x64x16,5 64x64x16,7 256x256x16,7 "
+#net_params="1x2x32,3"
 #net_params="64x16x64,32 128x16x64,32 256x16x64,32 "
 #net_params+="64x64x64,32 64x16x128,32 64x16x256,32 "
 #net_params+="64x16x64,64 64x16x64,128 64x16x64,256 "
 
 #list of metrics
-metrics="sm__cycles_elapsed.avg "
-#metrics="sm__cycles_elapsed.avg.per_second,\
-#sm__cycles_elapsed.avg,\
-#sm__inst_executed_pipe_tensor.sum,\
-#sm__sass_thread_inst_executed_op_fadd_pred_on.sum,\
-#sm__sass_thread_inst_executed_op_ffma_pred_on.sum,\
-#sm__sass_thread_inst_executed_op_fmul_pred_on.sum,\
-#sm__sass_thread_inst_executed_op_hadd_pred_on.sum,\
-#sm__sass_thread_inst_executed_op_hfma_pred_on.sum,\
-#sm__sass_thread_inst_executed_op_hmul_pred_on.sum,\
-#dram__bytes.sum,\
-#lts__t_bytes.sum,\
-#l1tex__t_bytes.sum "
+#metrics="sm__cycles_elapsed.avg "
+metrics="sm__cycles_elapsed.avg.per_second,\
+sm__cycles_elapsed.avg,\
+sm__inst_executed_pipe_tensor.sum,\
+sm__sass_thread_inst_executed_op_fadd_pred_on.sum,\
+sm__sass_thread_inst_executed_op_ffma_pred_on.sum,\
+sm__sass_thread_inst_executed_op_fmul_pred_on.sum,\
+sm__sass_thread_inst_executed_op_hadd_pred_on.sum,\
+sm__sass_thread_inst_executed_op_hfma_pred_on.sum,\
+sm__sass_thread_inst_executed_op_hmul_pred_on.sum,\
+dram__bytes.sum,\
+lts__t_bytes.sum,\
+l1tex__t_bytes.sum "
 
 #export TF_XLA_FLAGS="--tf_xla_auto_jit=2"
-#export XLA_FLAGS="--xla_dump_to=$run_dir" 
-#cells="rnn lstm gru "
-#precs="16 32"
-cells="rnn "
-precs="16 "
+#export XLA_FLAGS="--xla_dump_to=$run_dir"
+
+cells="rnn lstm gru "
+precs="16 32"
+#cells="rnn "
+#precs="16 "
 
 num_warmup=5
 num_iter=1

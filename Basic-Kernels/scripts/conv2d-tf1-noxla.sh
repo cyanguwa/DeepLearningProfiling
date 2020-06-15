@@ -30,7 +30,7 @@ run_dir=$SCRATCH/tf_cnn_kernels_nsight/Ker-conv2d-tf1-noxla-$SLURM_JOBID/
 mkdir -p ${run_dir}
 
 #copy relevant files
-script_dir=/global/cfs/cdirs/nstaff/cjyang/study/Yunsong/tf-perf-kernels/
+script_dir=/where BasicKernels is/
 script="conv2d_tf1.py"
 cp ${script_dir}/python/$script ${run_dir}/
 cp $0 ${run_dir}/conv2d-tf1-$enable_xla.sh
@@ -43,26 +43,26 @@ if [ $enable_xla == "xla" ];then
 fi
 
 #net_params
-net_params="ResNet50-2,112x112x64,3x3x64x64,2 ResNet50-1,112x112x64,3x3x64x64,2 "
+net_params="ResNet50-2,112x112x64,3x3x64x64,2 ResNet50-2,112x112x64,3x3x64x256,2 ResNet50-2,112x112x64,7x7x64x64,2 "
 #net_params="VGG-1,224x224x3,3x3x3x64,1 VGG-2,224x224x64,3x3x64x128,2 VGG-3,112x112x128,3x3x128x256,2 ResNet50-1,224x224x3,7x7x3x64,2 ResNet50-2,112x112x64,3x3x64x64,2 "
 #net_params+="ResNet50-2,112x112x64,3x3x64x128,2 ResNet50-2,112x112x64,3x3x64x256,2 ResNet50-2,112x112x64,3x3x64x512,2 ResNet50-2,112x112x64,7x7x64x64,2 ResNet50-2,112x112x64,9x9x64x64,2 "
 #net_params+="ResNet50-2,112x112x64,3x3x64x128,1 ResNet50-2,112x112x64,3x3x64x256,1 ResNet50-2,112x112x64,3x3x64x512,1 ResNet50-2,112x112x64,7x7x64x64,1 ResNet50-2,112x112x64,9x9x64x64,1 "
 #net_params+="ResNet50-2,112x112x64,3x3x64x128,3 ResNet50-2,112x112x64,3x3x64x256,3 ResNet50-2,112x112x64,3x3x64x512,3 ResNet50-2,112x112x64,7x7x64x64,3 ResNet50-2,112x112x64,9x9x64x64,3 "
 
 #list of metrics
-metrics="sm__cycles_elapsed.avg "
-#metrics="sm__cycles_elapsed.avg.per_second,\
-#sm__cycles_elapsed.avg,\
-#sm__inst_executed_pipe_tensor.sum,\
-#sm__sass_thread_inst_executed_op_fadd_pred_on.sum,\
-#sm__sass_thread_inst_executed_op_ffma_pred_on.sum,\
-#sm__sass_thread_inst_executed_op_fmul_pred_on.sum,\
-#sm__sass_thread_inst_executed_op_hadd_pred_on.sum,\
-#sm__sass_thread_inst_executed_op_hfma_pred_on.sum,\
-#sm__sass_thread_inst_executed_op_hmul_pred_on.sum,\
-#dram__bytes.sum,\
-#lts__t_bytes.sum,\
-#l1tex__t_bytes.sum "
+#metrics="sm__cycles_elapsed.avg "
+metrics="sm__cycles_elapsed.avg.per_second,\
+sm__cycles_elapsed.avg,\
+sm__inst_executed_pipe_tensor.sum,\
+sm__sass_thread_inst_executed_op_fadd_pred_on.sum,\
+sm__sass_thread_inst_executed_op_ffma_pred_on.sum,\
+sm__sass_thread_inst_executed_op_fmul_pred_on.sum,\
+sm__sass_thread_inst_executed_op_hadd_pred_on.sum,\
+sm__sass_thread_inst_executed_op_hfma_pred_on.sum,\
+sm__sass_thread_inst_executed_op_hmul_pred_on.sum,\
+dram__bytes.sum,\
+lts__t_bytes.sum,\
+l1tex__t_bytes.sum "
 
 #export TF_XLA_FLAGS="--tf_xla_auto_jit=2"
 #export XLA_FLAGS="--xla_dump_to=$run_dir" 

@@ -31,7 +31,7 @@ else:
 
 # warnings.simplefilter('ignore')
 # tf.logging.set_verbosity(tf.logging.ERROR)
-# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 print("Eager execution: {}".format(tf.executing_eagerly()))
 

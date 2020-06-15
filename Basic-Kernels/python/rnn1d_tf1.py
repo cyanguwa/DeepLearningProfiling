@@ -27,7 +27,7 @@ else:
 
 # warnings.simplefilter('ignore')
 #tf.logging.set_verbosity(tf.logging.ERROR)
-# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 
 
 def rnn1d(input_data, cell_type, n_neurons, dtype):
