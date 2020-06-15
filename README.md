@@ -14,7 +14,7 @@ This repository includes three components:
 Scripts for profiling, post-processing and Roofline plotting are added on top of the original repositories. Some of the profiling scripts are based on:
 - https://gitlab.com/NERSC/roofline-on-nvidia-gpus/
 
-The new hierarchical Roofline methodology is:
+The new hierarchical Roofline methodology is: [Based on Nsight Compute from CUDA 11]
 
 - Time: sm__cycles_elapsed.avg / sm__cycles_elapsed.avg.per_second
 - FLOPs: 
