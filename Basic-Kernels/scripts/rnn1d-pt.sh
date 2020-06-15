@@ -23,7 +23,7 @@ run_dir=$SCRATCH/tf_cnn_kernels_nsight/Ker-rnn1d-pt-$SLURM_JOBID/
 mkdir -p ${run_dir}
 
 #copy relevant files
-script_dir=/where BasicKernels is/
+script_dir=<where BasicKernels is>
 script="rnn1d_pt.py"
 cp ${script_dir}/python/$script ${run_dir}/
 cp $0 ${run_dir}/rnn1d-pt.sh

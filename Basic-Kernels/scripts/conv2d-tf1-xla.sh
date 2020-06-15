@@ -30,7 +30,7 @@ run_dir=$SCRATCH/tf_cnn_kernels_nsight/Ker-conv2d-tf1-xla-$SLURM_JOBID/
 mkdir -p ${run_dir}
 
 #copy relevant files
-script_dir=/where BasicKernels is/
+script_dir=<where BasicKernels is>
 script="conv2d_tf1.py"
 cp ${script_dir}/python/$script ${run_dir}/
 cp $0 ${run_dir}/conv2d-tf1-$enable_xla.sh

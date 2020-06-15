@@ -29,7 +29,7 @@ run_dir=$SCRATCH/tf_cnn_kernels_nsight/Ker-rnn1d-tf1-noxla-$SLURM_JOBID/
 mkdir -p ${run_dir}
 
 #copy relevant files
-script_dir=/where BasicKernels is/
+script_dir=<where BasicKernels is>
 script="rnn1d_tf1.py"
 cp ${script_dir}/python/$script ${run_dir}/
 cp $0 ${run_dir}/rnn1d-tf1-$enable_xla.sh

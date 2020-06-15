@@ -23,7 +23,7 @@ run_dir=$SCRATCH/tf_cnn_kernels_nsight/Ker-conv2d-pt-$SLURM_JOBID/
 mkdir -p ${run_dir}
 
 #copy relevant files
-script_dir=/where BasicKernels is/
+script_dir=<where BasicKernels is>
 script="conv2d_pt.py"
 cp ${script_dir}/python/$script ${run_dir}/
 cp $0 ${run_dir}/conv2d-pt.sh
