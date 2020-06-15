@@ -1,4 +1,4 @@
-## a rnn1d kernel using tensorflow
+## A rnn1d kernel using tensorflow 1.15
 
 import os
 import warnings
@@ -30,7 +30,6 @@ else:
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 
 
-
 def rnn1d(input_data, cell_type, n_neurons, dtype):
     if cell_type == 'rnn':
         basic_cell = tf.contrib.rnn.BasicRNNCell(num_units=n_neurons)
@@ -42,7 +41,6 @@ def rnn1d(input_data, cell_type, n_neurons, dtype):
         raise Exception("cell_type could only be: rnn, lstm or gru!")
 
     outputs, states = tf.nn.dynamic_rnn(basic_cell, input_data, dtype=dtype)
-
     return outputs, states
 
 
@@ -123,9 +121,7 @@ def main(input_tensor_shape, cell_type, n_neurons, dtype, n_iter, n_warm, comput
                 
         for i in range(n_iter):
             result = sess.run(exec_op)
-#             print(type(result))
-#             print(result.shape)
-#             print(len(result),len(result[0]),len(result[1]),len(result[0][0]),len(result[0][0][0])) # 2 2 2 35 3 for 1x2x32,3
+
         if os.environ['PROFILER'] == 'pycuda':
             if have_pycuda:
                 pyc.driver.stop_profiler()

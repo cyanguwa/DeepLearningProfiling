@@ -1,9 +1,8 @@
-## a conv2d kernel using tensorflow
+## A conv2d kernel using tensorflow 2.2
 
 import os
 import warnings
 import tensorflow as tf
-#from tensorflow.python.eager import profiler as tfprof
 import numpy as np
 import argparse
 import time
@@ -35,19 +34,6 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 #tf.compat.v1.disable_eager_execution()
 print("Eager execution: {}".format(tf.executing_eagerly()))
 
-#    #set gpu to allow mem growth
-#    gpus = tf.config.experimental.list_physical_devices('GPU')
-#    if gpus:
-#        try:
-#            # Currently, memory growth needs to be the same across GPUs
-#            for gpu in gpus:
-#                tf.config.experimental.set_memory_growth(gpu, True)
-#            #logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-#            #print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-#        except RuntimeError as e:
-#            # Memory growth must be set before GPUs have been initialized
-#            print(e)
-
 
 def conv2d(input_data, data_format, weights, stride_, dtype):
     if data_format == "NCHW":
@@ -62,8 +48,8 @@ def conv2d(input_data, data_format, weights, stride_, dtype):
 #calibration measurement
 def run_calibrate(input_tensor_shape, data_format, weights, stride, dtype):
     #define op
-    #run the stuff
     input_image = tf.random.uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=dtype)
+    #run the stuff
     _ = input_image.numpy()
 
 

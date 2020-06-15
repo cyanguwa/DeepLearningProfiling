@@ -1,4 +1,4 @@
-## a conv2d kernel using tensorflow
+## A conv2d kernel using tensorflow 1.15
 
 import os
 import warnings
@@ -26,19 +26,10 @@ elif os.environ['PROFILER'] == 'cupy':
 else:
     print('Please make sure Start/Stop profiler is installed')
 
-warnings.simplefilter('ignore')
+# warnings.simplefilter('ignore')
 #tf.logging.set_verbosity(tf.logging.ERROR)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 
-
-#N = 10
-#C = 3
-#H = 128
-#W = 128
-
-#input_tensor_shape = [10,128,128,3]  # NHWC
-#kernel_shape = [5,5,3,10]
-#stride_ = [1,2,2,1]
 
 def conv2d(input_data, data_format, kernel_shape, stride_, dtype):
     weights = tf.Variable(tf.random.truncated_normal(kernel_shape, stddev=0.03, dtype=dtype), dtype=dtype)

@@ -1,4 +1,4 @@
-## a conv2d kernel using tensorflow
+## A rnn1d kernel using tensorflow 2.2
 
 import os
 import warnings
@@ -6,8 +6,6 @@ import warnings
 import tensorflow as tf
 # tf.compat.v1.disable_eager_execution()
 #tf.disable_v2_behavior()
-#import tensorflow as tf
-#from tensorflow.python.eager import profiler as tfprof
 import numpy as np
 import argparse
 import time
@@ -34,52 +32,27 @@ else:
 # warnings.simplefilter('ignore')
 # tf.logging.set_verbosity(tf.logging.ERROR)
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
-# os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 print("Eager execution: {}".format(tf.executing_eagerly()))
 
-#    #set gpu to allow mem growth
-#    gpus = tf.config.experimental.list_physical_devices('GPU')
-#    if gpus:
-#        try:
-#            # Currently, memory growth needs to be the same across GPUs
-#            for gpu in gpus:
-#                tf.config.experimental.set_memory_growth(gpu, True)
-#            #logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-#            #print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-#        except RuntimeError as e:
-#            # Memory growth must be set before GPUs have been initialized
-#            print(e)
 
 # @tf.function(experimental_compile=True)
 def rnn1d(input_data, cell_type, n_neurons, dtype):
     if cell_type == 'rnn':
-#         basic_cell = tf.nn.rnn_cell.BasicRNNCell(num_units=n_neurons)  
-#         basic_cell = tf.nn.RNNCellDeviceWrapper(tf.keras.layers.SimpleRNNCell(units=n_neurons),device='/device:XLA_GPU:0')
         basic_cell = tf.keras.layers.SimpleRNNCell(units=n_neurons)
     elif cell_type == 'lstm':
-#         basic_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=n_neurons)
         basic_cell = tf.keras.layers.LSTMCell(units=n_neurons)
     elif cell_type == 'gru':
-#         basic_cell = tf.nn.rnn_cell.GRUCell(num_units=n_neurons)
         basic_cell = tf.keras.layers.GRUCell(units=n_neurons)
     else:
         raise Exception("cell_type could only be: rnn, lstm or gru!")
 
-#     outputs, states = tf.nn.dynamic_rnn(basic_cell, input_data, dtype=dtype)
-#     outputs, states = tf.keras.layers.RNN(basic_cell, return_sequences=True, return_state=True)(input_data)
-#     return outputs, states
-#     initial_state = basic_cell.get_initial_state(input_data, input_data.shape[0], dtype=dtype)
-    
     outputs, states = tf.keras.layers.RNN(basic_cell, return_sequences=True, return_state=True)(input_data)
-#     outputs, states = model(input_data)
     return outputs, states
 
 
 #calibration measurement
 def run_calibrate(input_tensor_shape, cell_type, n_neurons, tensor_type):
-    #define op
-    #run the stuff
-#     input_image = tf.random.uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=tensor_type)
     input_image = tf.keras.backend.random_uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=tensor_type)
 #     _ = input_image.numpy()
     return input_image
@@ -87,39 +60,26 @@ def run_calibrate(input_tensor_shape, cell_type, n_neurons, tensor_type):
 
 #forward
 def run_forward(input_tensor_shape, cell_type, n_neurons, tensor_type):
-    #define op
-#     input_image = tf.random.uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=tensor_type)
     input_image = tf.keras.backend.random_uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=tensor_type)
-
-    output_result, states_cur = rnn1d(input_image, cell_type, n_neurons, tensor_type)
-    
-    #run the stuff
+    output_result, states_cur = rnn1d(input_image, cell_type, n_neurons, tensor_type) 
 #     _,_ = output_result.numpy(), states_cur.numpy()
     return output_result
 
 
 #backward
-
 def run_backward(input_tensor_shape, cell_type, n_neurons, tensor_type):
-    #define op, under tape
-#     input_image = tf.random.uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=tensor_type)
     input_image = tf.keras.backend.random_uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=tensor_type)
     with tf.GradientTape(persistent=True) as tape:
         tape.watch(input_image)
         output_result, states_cur = rnn1d(input_image, cell_type, n_neurons, tensor_type)
-#     grad_input   = tape.gradient(output_result, input_image)
-#     grad_weights = tape.gradient(output_result, weights)
     grads = tape.gradient(output_result, input_image)
 #     tvars = tf.trainable_variables()
 #     grads = tape.gradient(output_result,tvars)
 #     opt = tf.keras.optimizers.SGD() 
 #     opt.apply_gradients(zip(grads, mnist_model.trainable_variables))
 
-    #run the stuff
-#     _, _ = grad_input.numpy(), grad_weights.numpy()
-    _ = grads.numpy()
-#     return grads
-
+#     _ = grads.numpy()
+    return grads
 
 
 def main(input_tensor_shape, cell_type, n_neurons, dtype, n_iter, n_warm, compute_type, enable_xla):
@@ -131,12 +91,10 @@ def main(input_tensor_shape, cell_type, n_neurons, dtype, n_iter, n_warm, comput
         tensor_type=tf.float32
     else:
         raise Exception('data type can only be float16 or float32')
-#     tensor_type=dtype
     tf.keras.backend.set_floatx(dtype)
 #     tf.config.optimizer.set_jit(False)
     
     ##XLA or not
-#     if tf.test.is_gpu_available():
     if tf.config.list_physical_devices('GPU'):
         device = '/device:XLA_GPU:0' if enable_xla else '/GPU:0'
     else:
@@ -144,7 +102,6 @@ def main(input_tensor_shape, cell_type, n_neurons, dtype, n_iter, n_warm, comput
         
     print("Running on device {}".format(device))
     print(tf.config.experimental.list_physical_devices())
-    ##tf.config.experimental.set_memory_growth(device, True)
     ##tf.config.gpu.set_per_process_memory_growth(True)
 #     tf.config.set_soft_device_placement(False)
     tf.debugging.set_log_device_placement(True)
@@ -162,10 +119,7 @@ def main(input_tensor_shape, cell_type, n_neurons, dtype, n_iter, n_warm, comput
     else:
         raise ValueError("Error, compute_type should be either forward or backward or calibrate")
     
-    #we might need that
-#     with tf.device(device):
-#         weights = tf.Variable(tf.random.truncated_normal(kernel_shape, stddev=0.03, dtype=dtype), dtype=dtype)
-    
+
     #start session
     print("warming up for {} steps".format(n_warm))
     start = time.time()
@@ -186,6 +140,7 @@ def main(input_tensor_shape, cell_type, n_neurons, dtype, n_iter, n_warm, comput
     elif os.environ['PROFILER'] == 'cupy':
         if have_cupy:
             cupy.cuda.profiler.start()
+            
     with tf.device(device):
         for i in range(n_iter):
             compfunc(input_tensor_shape, cell_type, n_neurons, tensor_type)
