@@ -1,0 +1,84 @@
+Apex flag is True
+==PROF== Connected to process 58587 (/global/cfs/cdirs/m1759/charlene/condaenvs/py3.7pt1.5cuda10.2.89/bin/python3.7)
+Using GPUs
+Constructing DeepLabv3+ model...
+Number of output channels: 3
+Output stride: 16
+Number of Input Channels: 16
+Selected optimization level O1:  Insert automatic casts around Pytorch functions and Tensor methods.
+
+Defaults for this optimization level are:
+enabled                : True
+opt_level              : O1
+cast_model_type        : None
+patch_torch_functions  : True
+keep_batchnorm_fp32    : None
+master_weights         : None
+loss_scale             : dynamic
+Processing user overrides (additional kwargs that are not None)...
+After processing overrides, optimization options are:
+enabled                : True
+opt_level              : O1
+cast_model_type        : None
+patch_torch_functions  : True
+keep_batchnorm_fp32    : None
+master_weights         : None
+loss_scale             : dynamic
+Apex optimizer called
+filename is /global/cfs/cdirs/nstaff/cjyang/study/Yunsong/mlperf/train/data-1996-01-01-02-5.h5
+Initialized dataset with  12  samples.
+1591758251.7713 REPORT: starting warmup
+Apex scaled loss called
+step is 1
+Apex scaled loss called
+step is 2
+Apex scaled loss called
+step is 3
+Apex scaled loss called
+step is 4
+Apex scaled loss called
+step is 5
+1591758260.3756 REPORT: starting profiling
+Apex scaled loss called
+self.num_warmup_steps is 5, self.steps is 5
+starting profiling---
+stopping profiling---
+step is 6
+1591758262.4350 REPORT: finishing profiling
+==PROF== Disconnected from process 58587
+"ID","Process ID","Process Name","Host Name","Kernel Name","Kernel Time","Context","Stream","Section Name","Metric Name","Metric Unit","Metric Value"
+"0","58587","python3.7","127.0.0.1","void at::native::modern::vectorized_elementwise_kernel<4, at::native::fill_kernel_cuda(at::TensorIterator&, c10::Scalar)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda()#1}, at::detail::Array<char*, 1> >(int, at::native::fill_kernel_cuda(at::TensorIterator&, c10::Scalar)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda()#1}, at::detail::Array<char*, 1>)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"1","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int>(int, int volatile*, TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"2","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int>(int, int volatile*, TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"3","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int>(int, int volatile*, TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"4","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int>(int, int volatile*, TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"5","58587","python3.7","127.0.0.1","cleanup(float*, float*, float*, float*, bool, int)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"6","58587","python3.7","127.0.0.1","void at::native::modern::vectorized_elementwise_kernel<4, at::native::fill_kernel_cuda(at::TensorIterator&, c10::Scalar)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda()#1}, at::detail::Array<char*, 1> >(int, at::native::fill_kernel_cuda(at::TensorIterator&, c10::Scalar)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda()#1}, at::detail::Array<char*, 1>)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"7","58587","python3.7","127.0.0.1","void at::native::modern::vectorized_elementwise_kernel<4, at::native::fill_kernel_cuda(at::TensorIterator&, c10::Scalar)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda()#1}, at::detail::Array<char*, 1> >(int, at::native::fill_kernel_cuda(at::TensorIterator&, c10::Scalar)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda()#1}, at::detail::Array<char*, 1>)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"8","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int>(int, int volatile*, TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"9","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int>(int, int volatile*, TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"10","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int>(int, int volatile*, TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"11","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int>(int, int volatile*, TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"12","58587","python3.7","127.0.0.1","cleanup(float*, float*, float*, float*, bool, int)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"13","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float>(int, int volatile*, TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"14","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float>(int, int volatile*, TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"15","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float>(int, int volatile*, TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"16","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float>(int, int volatile*, TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"17","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float>(int, int volatile*, TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"18","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float>(int, int volatile*, TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"19","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float>(int, int volatile*, TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float)","2020-Jun-09 20:04:21","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"20","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float>(int, int volatile*, TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"21","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float>(int, int volatile*, TensorListMetadata<4>, LAMBStage1Functor<float>, float, float, float, float, float, float, adamMode_t, float, float*, float)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"22","58587","python3.7","127.0.0.1","void at::native::modern::vectorized_elementwise_kernel<4, at::native::fill_kernel_cuda(at::TensorIterator&, c10::Scalar)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda()#1}, at::detail::Array<char*, 1> >(int, at::native::fill_kernel_cuda(at::TensorIterator&, c10::Scalar)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda()#1}, at::detail::Array<char*, 1>)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"23","58587","python3.7","127.0.0.1","void at::native::modern::vectorized_elementwise_kernel<4, at::native::fill_kernel_cuda(at::TensorIterator&, c10::Scalar)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda()#1}, at::detail::Array<char*, 1> >(int, at::native::fill_kernel_cuda(at::TensorIterator&, c10::Scalar)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda()#1}, at::detail::Array<char*, 1>)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"24","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int>(int, int volatile*, TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"25","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int>(int, int volatile*, TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"26","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int>(int, int volatile*, TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"27","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int>(int, int volatile*, TensorListMetadata<1>, L2NormFunctor<float>, float*, float*, bool, int)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"28","58587","python3.7","127.0.0.1","cleanup(float*, float*, float*, float*, bool, int)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"29","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<2>, LAMBStage2Functor<float>, float*, float*, float>(int, int volatile*, TensorListMetadata<2>, LAMBStage2Functor<float>, float*, float*, float)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"30","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<2>, LAMBStage2Functor<float>, float*, float*, float>(int, int volatile*, TensorListMetadata<2>, LAMBStage2Functor<float>, float*, float*, float)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"31","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<2>, LAMBStage2Functor<float>, float*, float*, float>(int, int volatile*, TensorListMetadata<2>, LAMBStage2Functor<float>, float*, float*, float)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"32","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<2>, LAMBStage2Functor<float>, float*, float*, float>(int, int volatile*, TensorListMetadata<2>, LAMBStage2Functor<float>, float*, float*, float)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"33","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<2>, LAMBStage2Functor<float>, float*, float*, float>(int, int volatile*, TensorListMetadata<2>, LAMBStage2Functor<float>, float*, float*, float)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
+"34","58587","python3.7","127.0.0.1","void multi_tensor_apply_kernel<TensorListMetadata<2>, LAMBStage2Functor<float>, float*, float*, float>(int, int volatile*, TensorListMetadata<2>, LAMBStage2Functor<float>, float*, float*, float)","2020-Jun-09 20:04:22","1","7","Command line profiler metrics","sm__sass_thread_inst_executed_op_hadd_pred_on.sum","inst","0"
