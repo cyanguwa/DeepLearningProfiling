@@ -14,7 +14,7 @@ Scripts for profiling, post-processing and Roofline plotting are added on top of
 The new hierarchical Roofline methodology is: [Based on Nsight Compute from CUDA 11]
 - Time: sm__cycles_elapsed.avg / sm__cycles_elapsed.avg.per_second
 - FLOPs:  
-    sm__sass_thread_inst_executed_op_dadd_pred_on.sum + 2 x sm__sass_thread_inst_executed_op_dfma_pred_on.sum  
+  sm__sass_thread_inst_executed_op_dadd_pred_on.sum + 2 x sm__sass_thread_inst_executed_op_dfma_pred_on.sum  
   + sm__sass_thread_inst_executed_op_dmul_pred_on.sum  
   + sm__sass_thread_inst_executed_op_fadd_pred_on.sum + 2 x sm__sass_thread_inst_executed_op_ffma_pred_on.sum  
   + sm__sass_thread_inst_executed_op_fmul_pred_on.sum  
