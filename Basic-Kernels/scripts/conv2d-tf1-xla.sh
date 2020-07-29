@@ -1,8 +1,10 @@
 #!/bin/bash
 #SBATCH -J conv2d-tf1-xla
 #SBATCH -C gpu
-#SBATCH --gres=gpu:1
-##SBATCH --exclusive
+#SBATCH --gres=gpu:8
+#SBATCH --exclusive
+#SBATCH -q special
+#SBATCH -A m1759
 #SBATCH -t 04:00:00
 
 #activate env
@@ -26,28 +28,26 @@ export OMP_PROC_BIND=spread
 sruncmd="srun -N ${SLURM_NNODES} -n $(( ${SLURM_NNODES} * ${rankspernode} )) --cpu_bind=cores"
 
 #create run dir
-run_dir=$SCRATCH/tf_cnn_kernels_nsight/Ker-conv2d-tf1-xla-$SLURM_JOBID/
+run_dir=$PWD/tf_cnn_kernels_nsight/conv2d-tf1-xla/$SLURM_JOBID/
 mkdir -p ${run_dir}
 
 #copy relevant files
-script_dir=<where BasicKernels is>
+script_dir=../python
 script="conv2d_tf1.py"
-cp ${script_dir}/python/$script ${run_dir}/
-cp $0 ${run_dir}/conv2d-tf1-$enable_xla.sh
+cp $script_dir/$script $run_dir/
 
 #step in
-cd ${run_dir}
+cd $run_dir
 
 if [ $enable_xla == "xla" ];then
     sed -i 's/allow_soft_placement=False/allow_soft_placement=True/g' $script
 fi
 
 #net_params
-net_params="ResNet50-2,112x112x64,3x3x64x64,2 ResNet50-2,112x112x64,3x3x64x256,2 ResNet50-2,112x112x64,7x7x64x64,2 "
-#net_params="VGG-1,224x224x3,3x3x3x64,1 VGG-2,224x224x64,3x3x64x128,2 VGG-3,112x112x128,3x3x128x256,2 ResNet50-1,224x224x3,7x7x3x64,2 ResNet50-2,112x112x64,3x3x64x64,2 "
-#net_params+="ResNet50-2,112x112x64,3x3x64x128,2 ResNet50-2,112x112x64,3x3x64x256,2 ResNet50-2,112x112x64,3x3x64x512,2 ResNet50-2,112x112x64,7x7x64x64,2 ResNet50-2,112x112x64,9x9x64x64,2 "
-#net_params+="ResNet50-2,112x112x64,3x3x64x128,1 ResNet50-2,112x112x64,3x3x64x256,1 ResNet50-2,112x112x64,3x3x64x512,1 ResNet50-2,112x112x64,7x7x64x64,1 ResNet50-2,112x112x64,9x9x64x64,1 "
-#net_params+="ResNet50-2,112x112x64,3x3x64x128,3 ResNet50-2,112x112x64,3x3x64x256,3 ResNet50-2,112x112x64,3x3x64x512,3 ResNet50-2,112x112x64,7x7x64x64,3 ResNet50-2,112x112x64,9x9x64x64,3 "
+net_params="ResNet50-2,112x112x64,3x3x64x64,1,16 ResNet50-2,112x112x64,3x3x64x64,2,16 ResNet50-2,112x112x64,3x3x64x64,3,16 "
+net_params+="ResNet50-2,112x112x64,3x3x64x64,2,32 ResNet50-2,112x112x64,3x3x64x64,2,64 "
+net_params+="ResNet50-2,112x112x64,7x7x64x64,2,16 ResNet50-2,112x112x64,9x9x64x64,2,16 "
+net_params+="ResNet50-2,112x112x64,3x3x64x128,2,16 ResNet50-2,112x112x64,3x3x64x256,2,16 ResNet50-2,112x112x64,3x3x64x512,2,16 "
 
 #list of metrics
 #metrics="sm__cycles_elapsed.avg "
@@ -66,64 +66,61 @@ l1tex__t_bytes.sum "
 
 #export TF_XLA_FLAGS="--tf_xla_auto_jit=2"
 #export XLA_FLAGS="--xla_dump_to=$run_dir" 
-#precs="16 32 "
-#batch_sizes="64 128 256 "
 #data_formats="NHWC NCHW "
-precs="16 "
-batch_sizes="64 "
+precs="16 32"
 data_formats="NHWC "
 
 num_warmup=5
 num_iter=1
 
 for prec in $precs; do
-    for batch_size in $batch_sizes; do
-        for data_format in $data_formats; do
-    
-            #iterate over input tuples
-            for net_param in ${net_params}; do 
-                tmp_param=(${net_param//,/ })
-                name=${tmp_param[0]}
-                input_tensor_shape=${tmp_param[1]//x/ }
-                kernel_shape=${tmp_param[2]//x/ }
-                stride=${tmp_param[3]}
+    for data_format in $data_formats; do
 
-                outputstr1=tf1.name_${name}.batch_${batch_size}.input_${tmp_param[1]}
-                outputstr2=kernel_${tmp_param[2]}.stride_${stride}.data_${data_format}.fp${prec}
+        #iterate over input tuples
+        for net_param in ${net_params}; do 
+            tmp_param=(${net_param//,/ })
+            name=${tmp_param[0]}
+            input_tensor_shape=${tmp_param[1]//x/ }
+            kernel_shape=${tmp_param[2]//x/ }
+            stride=${tmp_param[3]}
+            batch_size=${tmp_param[4]}
 
-                #iterate over FW BW
-                for ctype in calibrate forward backward; do
+            outputstr1=tf1.name_${name}.batch_${tmp_param[4]}.input_${tmp_param[1]}
+            outputstr2=kernel_${tmp_param[2]}.stride_${stride}.data_${data_format}.fp${prec}
 
-                    #profile string
-                    profilestring="/usr/common/software/cuda/11.0.167/bin/nv-nsight-cu-cli \
-                    --profile-from-start off --metrics ${metrics} --csv --kernel-base demangled"
+            #iterate over FW BW
+            for ctype in calibrate forward backward; do
 
-                    if [ $enable_xla == "xla" ];then
-                        ${sruncmd} ${profilestring} $(which python) -u ./$script \
-                            --dtype float${prec} \
-                            --data_format ${data_format} \
-                            --input_tensor_shape ${batch_size} ${input_tensor_shape} \
-                            --kernel_shape ${kernel_shape} \
-                            --stride ${stride} \
-                            --num_warmups ${num_warmup} \
-                            --num_iterations ${num_iter} \
-                            --enable_xla \
-                            --compute_type ${ctype} 2>&1 > out.${outputstr1}.${outputstr2}.pass_${ctype}.${enable_xla}
-                    else
-                        ${sruncmd} ${profilestring} $(which python) -u ./$script \
-                            --dtype float${prec} \
-                            --data_format ${data_format} \
-                            --input_tensor_shape ${batch_size} ${input_tensor_shape} \
-                            --kernel_shape ${kernel_shape} \
-                            --stride ${stride} \
-                            --num_warmups ${num_warmup} \
-                            --num_iterations ${num_iter} \
-                            --compute_type ${ctype} 2>&1 > out.${outputstr1}.${outputstr2}.pass_${ctype}.${enable_xla}
-                    fi
+                #profile string
+                profilestring="/usr/common/software/cuda/11.0.167/bin/nv-nsight-cu-cli \
+                --profile-from-start off --metrics ${metrics} --kernel-base demangled -o \
+                ${outputstr1}.${outputstr2}.pass_${ctype}.${enable_xla}"
 
-                done
+                if [ $enable_xla == "xla" ];then
+                    ${sruncmd} ${profilestring} $(which python) -u ./$script \
+                        --dtype float${prec} \
+                        --data_format ${data_format} \
+                        --input_tensor_shape ${batch_size} ${input_tensor_shape} \
+                        --kernel_shape ${kernel_shape} \
+                        --stride ${stride} \
+                        --num_warmups ${num_warmup} \
+                        --num_iterations ${num_iter} \
+                        --enable_xla \
+                        --compute_type ${ctype}
+                else
+                    ${sruncmd} ${profilestring} $(which python) -u ./$script \
+                        --dtype float${prec} \
+                        --data_format ${data_format} \
+                        --input_tensor_shape ${batch_size} ${input_tensor_shape} \
+                        --kernel_shape ${kernel_shape} \
+                        --stride ${stride} \
+                        --num_warmups ${num_warmup} \
+                        --num_iterations ${num_iter} \
+                        --compute_type ${ctype}
+                fi
+
             done
-
         done
+
     done
 done

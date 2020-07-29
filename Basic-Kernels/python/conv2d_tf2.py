@@ -183,6 +183,3 @@ if __name__ == '__main__':
          n_warm=parsed.num_warmups,
          compute_type=parsed.compute_type,
          enable_xla=parsed.enable_xla)
-    
-    
-
