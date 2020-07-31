@@ -47,8 +47,8 @@ def rnn1d(input_data, cell_type, n_neurons, dtype):
     else:
         raise Exception("cell_type could only be: rnn, lstm or gru!")
 
-    outputs, states = tf.keras.layers.RNN(basic_cell, return_sequences=True, return_state=True)(input_data)
-    return outputs, states
+    whole_seq_output, final_memory_state, final_carry_state = tf.keras.layers.RNN(basic_cell, return_sequences=True, return_state=True)(input_data)
+    return whole_seq_output, final_memory_state, final_carry_state
 
 
 #calibration measurement
@@ -61,7 +61,7 @@ def run_calibrate(input_tensor_shape, cell_type, n_neurons, tensor_type):
 #forward
 def run_forward(input_tensor_shape, cell_type, n_neurons, tensor_type):
     input_image = tf.keras.backend.random_uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=tensor_type)
-    output_result, states_cur = rnn1d(input_image, cell_type, n_neurons, tensor_type) 
+    output_result, states_cur, _ = rnn1d(input_image, cell_type, n_neurons, tensor_type) 
 #     _,_ = output_result.numpy(), states_cur.numpy()
     return output_result
 
@@ -71,7 +71,7 @@ def run_backward(input_tensor_shape, cell_type, n_neurons, tensor_type):
     input_image = tf.keras.backend.random_uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=tensor_type)
     with tf.GradientTape(persistent=True) as tape:
         tape.watch(input_image)
-        output_result, states_cur = rnn1d(input_image, cell_type, n_neurons, tensor_type)
+        output_result, states_cur, _ = rnn1d(input_image, cell_type, n_neurons, tensor_type)
     grads = tape.gradient(output_result, input_image)
 #     tvars = tf.trainable_variables()
 #     grads = tape.gradient(output_result,tvars)
