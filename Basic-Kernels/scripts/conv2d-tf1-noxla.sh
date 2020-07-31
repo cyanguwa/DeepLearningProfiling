@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -J conv2d-tf1-noxla
 #SBATCH -C gpu
-#SBATCH --gres=gpu:8
+#SBATCH --gres=gpu:1
 #SBATCH --exclusive
 #SBATCH -q special
 #SBATCH -A m1759
-#SBATCH -t 04:00:00
+#SBATCH -t 2:00:00
 
 #activate env
 module load tensorflow/gpu-1.15.0-py37

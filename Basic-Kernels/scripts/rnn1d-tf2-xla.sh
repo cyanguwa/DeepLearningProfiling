@@ -2,8 +2,10 @@
 #SBATCH -J rnn1d-tf2-xla
 #SBATCH -C gpu
 #SBATCH --gres=gpu:1
-##SBATCH --exclusive
-#SBATCH -t 04:00:00
+#SBATCH --exclusive
+#SBATCH -q special
+#SBATCH -A m1759
+#SBATCH -t 4:00:00
 
 #activate env
 module load tensorflow/gpu-2.2.0-py37
@@ -25,26 +27,17 @@ export OMP_PROC_BIND=spread
 sruncmd="srun -N ${SLURM_NNODES} -n $(( ${SLURM_NNODES} * ${rankspernode} )) --cpu_bind=cores"
 
 #create run dir
-run_dir=$SCRATCH/tf_cnn_kernels_nsight/Ker-rnn1d-tf2-xla-$SLURM_JOBID/
+run_dir=$PWD/tf_cnn_kernels_nsight/rnn1d-tf2-xla/$SLURM_JOBID/
 mkdir -p ${run_dir}
 
 #copy relevant files
-script_dir=<where BasicKernels is>
+script_dir=../python
 script="rnn1d_tf2.py"
-cp ${script_dir}/python/$script ${run_dir}/
-cp $0 ${run_dir}/rnn1d-tf2-$enable_xla.sh
+cp $script_dir/$script $run_dir/
 
 #step in
 cd ${run_dir}
 
-#net_params
-net_params="64x64x16,3 128x64x16,3 256x64x16,3 \
-64x128x16,3 128x256x16,3 256x64x4,3 \
-64x64x16,5 64x64x16,7 256x256x16,7 "
-#net_params="1x2x32,3"
-#net_params="64x16x64,32 128x16x64,32 256x16x64,32 "
-#net_params+="64x64x64,32 64x16x128,32 64x16x256,32 "
-#net_params+="64x16x64,64 64x16x64,128 64x16x64,256 "
 
 #list of metrics
 #metrics="sm__cycles_elapsed.avg "
@@ -64,9 +57,14 @@ l1tex__t_bytes.sum "
 #export TF_XLA_FLAGS="--tf_xla_auto_jit=2"
 #export XLA_FLAGS="--xla_dump_to=$run_dir"
 
-cells="rnn lstm gru "
+cells="lstm"
 precs="16 32"
-#cells="rnn "
+batch_size="32 64 128 256"
+time_steps="32 64 128"
+features="32 64 128"
+hidden_size="16 32 64 128"
+
+#cells="rnn lstm gru "
 #precs="16 "
 
 num_warmup=5
@@ -74,43 +72,46 @@ num_iter=1
 
 for prec in $precs; do
     for cell in $cells; do
-    
-            #iterate over input tuples
-            for net_param in ${net_params}; do 
-                tmp_param=(${net_param//,/ })
-                input_tensor_shape=${tmp_param[0]//x/ }
-                nneu=${tmp_param[1]}
+        for batch in $batch_size; do
+            for time in $time_steps; do
+                for feature in $features; do
+                    for h_size in $hidden_size; do
+                        input_tensor_shape=$batch" "$time" "$feature
+                        echo $input_tensor_shape
 
-                outputstr=tf2.fp_${prec}.celltype_${cell}.input_${tmp_param[0]}.nneu_${nneu}
-                #iterate over FW BW
-                for ctype in calibrate forward backward; do
+                        outputstr=tf2.fp_${prec}.celltype_${cell}.input_${batch}x${time}x${feature}.nneu_${h_size}
+                        #iterate over FW BW
+                        for ctype in calibrate forward backward; do
 
-                    #profile string
-                    profilestring="/usr/common/software/cuda/11.0.167/bin/nv-nsight-cu-cli \
-                    --profile-from-start off --metrics ${metrics} --csv --kernel-base demangled"
+                            #profile string
+                            profilestring="/usr/common/software/cuda/11.0.167/bin/nv-nsight-cu-cli \
+                            --profile-from-start off --metrics ${metrics} --kernel-base demangled -o \
+                            ${outputstr}.pass_${ctype}.${enable_xla}"
 
-                    if [ $enable_xla == "xla" ];then
-                        ${sruncmd} ${profilestring} $(which python) -u ./$script \
-                            --input_tensor_shape ${input_tensor_shape} \
-                            --cell_type ${cell} \
-                            --n_neurons ${nneu} \
-                            --dtype float${prec} \
-                            --num_iterations ${num_iter} \
-                            --num_warmups ${num_warmup} \
-                            --enable_xla \
-                            --compute_type ${ctype} 2>&1 > out.${outputstr}.pass_${ctype}.${enable_xla}
-                    else
-                        ${sruncmd} ${profilestring} $(which python) -u ./$script \
-                            --input_tensor_shape ${input_tensor_shape} \
-                            --cell_type ${cell} \
-                            --n_neurons ${nneu} \
-                            --dtype float${prec} \
-                            --num_iterations ${num_iter} \
-                            --num_warmups ${num_warmup} \
-                            --compute_type ${ctype} 2>&1 > out.${outputstr}.pass_${ctype}.${enable_xla}
-                    fi
-
+                            if [ $enable_xla == "xla" ];then
+                                ${sruncmd} ${profilestring} $(which python) -u ./$script \
+                                    --input_tensor_shape ${input_tensor_shape} \
+                                    --cell_type ${cell} \
+                                    --n_neurons ${h_size} \
+                                    --dtype float${prec} \
+                                    --num_iterations ${num_iter} \
+                                    --num_warmups ${num_warmup} \
+                                    --enable_xla \
+                                    --compute_type ${ctype}
+                            else
+                                ${sruncmd} ${profilestring} $(which python) -u ./$script \
+                                    --input_tensor_shape ${input_tensor_shape} \
+                                    --cell_type ${cell} \
+                                    --n_neurons ${h_size} \
+                                    --dtype float${prec} \
+                                    --num_iterations ${num_iter} \
+                                    --num_warmups ${num_warmup} \
+                                    --compute_type ${ctype}
+                            fi
+                        done
+                    done
                 done
             done
+        done
     done
 done
