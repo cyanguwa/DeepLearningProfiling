@@ -50,7 +50,6 @@ net_params+="ResNet50-2,112x112x64,7x7x64x64,2,16 ResNet50-2,112x112x64,9x9x64x6
 net_params+="ResNet50-2,112x112x64,3x3x64x128,2,16 ResNet50-2,112x112x64,3x3x64x256,2,16 ResNet50-2,112x112x64,3x3x64x512,2,16 "
 
 #list of metrics
-#metrics="sm__cycles_elapsed.avg "
 metrics="sm__cycles_elapsed.avg.per_second,\
 sm__cycles_elapsed.avg,\
 sm__inst_executed_pipe_tensor.sum,\
@@ -60,9 +59,36 @@ sm__sass_thread_inst_executed_op_fmul_pred_on.sum,\
 sm__sass_thread_inst_executed_op_hadd_pred_on.sum,\
 sm__sass_thread_inst_executed_op_hfma_pred_on.sum,\
 sm__sass_thread_inst_executed_op_hmul_pred_on.sum,\
-dram__bytes.sum,\
-lts__t_bytes.sum,\
-l1tex__t_bytes.sum "
+dram__bytes.sum,"
+
+### L1 transactions
+# local
+metrics+="\
+l1tex__t_sectors_pipe_lsu_mem_local_op_ld.sum,\
+l1tex__t_sectors_pipe_lsu_mem_local_op_st.sum,"
+# shared
+metrics+="\
+l1tex__data_pipe_lsu_wavefronts_mem_shared_op_ld.sum,\
+l1tex__data_pipe_lsu_wavefronts_mem_shared_op_st.sum,"
+# global
+metrics+="l1tex__t_sectors_pipe_lsu_mem_global_op_ld.sum,\
+l1tex__t_sectors_pipe_lsu_mem_global_op_st.sum,"
+# atomic
+metrics+="\
+l1tex__t_set_accesses_pipe_lsu_mem_global_op_atom.sum,\
+l1tex__t_set_accesses_pipe_lsu_mem_global_op_red.sum,\
+l1tex__t_set_accesses_pipe_tex_mem_surface_op_atom.sum,\
+l1tex__t_set_accesses_pipe_tex_mem_surface_op_red.sum,"
+
+### L2 transactions
+# read + write
+metrics+="\
+lts__t_sectors_op_read.sum,\
+lts__t_sectors_op_write.sum,"
+#atomic
+metrics+="\
+lts__t_sectors_op_atom.sum,\
+lts__t_sectors_op_red.sum"
 
 #export TF_XLA_FLAGS="--tf_xla_auto_jit=2"
 #export XLA_FLAGS="--xla_dump_to=$run_dir" 
