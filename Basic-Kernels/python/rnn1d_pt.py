@@ -1,4 +1,4 @@
-## A rnn1d kernel using pytorch
+# A rnn1d kernel using pytorch
 
 import os
 import warnings
@@ -34,77 +34,23 @@ else:
 
 # warnings.simplefilter('ignore')
 
-class RNN(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, batch_first):
-        super(RNN, self).__init__()
-        self.rnn = nn.RNN(
-            input_size = input_size,
-            hidden_size = hidden_size,
-            num_layers = num_layers,
-            batch_first = batch_first)
-        self.linear = nn.Linear(hidden_size, 1)
+def run_calibrate(input_image, myRNN):
+    output_result = input_image
 
-    def forward(self, x):
-        r_out, _ = self.rnn(x)
-        result  = self.linear(r_out)
-        return result
-
-class LSTM(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, batch_first):
-        super(LSTM, self).__init__()
-        self.lstm = nn.LSTM(
-            input_size = input_size,
-            hidden_size = hidden_size,
-            num_layers = num_layers,
-            batch_first = batch_first)
-        self.linear = nn.Linear(hidden_size, 1)
-
-    def forward(self, x):
-        r_out, _ = self.lstm(x)
-        result  = self.linear(r_out)
-        return result
-
-class GRU(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, batch_first):
-        super(GRU, self).__init__()
-        self.gru = nn.GRU(
-            input_size = input_size,
-            hidden_size = hidden_size,
-            num_layers = num_layers,
-            batch_first = batch_first)
-        self.linear = nn.Linear(hidden_size, 1)
-
-    def forward(self, x):
-        r_out, _ = self.gru(x)
-        result  = self.linear(r_out)
-        return result
-
-def run_calibrate(input_image, lstm, run_device):
-    exec_op = input_image
-    input_image = input_image.to(run_device)
-    input_image.cpu().detach().numpy()
-
-def run_forward(input_image, lstm, run_device):
-    lstm.to(run_device)
-    input_image = input_image.to(run_device)
-    exec_op = lstm(input_image)
-    exec_op.cpu().detach().numpy()
+def run_forward(input_image, myRNN):
+    output_result = myRNN(input_image)
     
-def run_backward(input_image, lstm, run_device):
+def run_backward(input_image, myRNN):
     lr = 0.01
     momentum = 0.5
-    optimizer = optim.SGD(lstm.parameters(), lr=lr, momentum=momentum)
+    optimizer = optim.SGD(myRNN.parameters(), lr=lr, momentum=momentum)
     optimizer.zero_grad()
         
-    lstm.to(run_device)
-    input_image = input_image.to(run_device)
-    exec_op = lstm(input_image)
-    exec_op.sum().backward()
+    output_result, _ = myRNN(input_image)
+    output_result.sum().backward()
     optimizer.step()
-    exec_op.cpu().detach().numpy()
-
     
-def main(input_tensor_shape, cell_type, input_size, hidden_size, num_layers, dtype, n_iter, n_warm, compute_type): 
+def main(input_tensor_shape, cell_type, n_neurons, dtype, n_iter, n_warm, compute_type): 
 
     if dtype == 'float16':
         tensor_type=torch.float16
@@ -114,22 +60,29 @@ def main(input_tensor_shape, cell_type, input_size, hidden_size, num_layers, dty
         raise Exception('data type can only be float16 or float32')
     
     if torch.cuda.device_count():
-        run_device = 'cuda:0'
+        device = torch.device('cuda:0') 
     else:
-        run_device = 'cpu'
+        device = torch.device('cpu')
+    print("Running on device {}".format(device))
         
-    input_image = np.random.randn(input_tensor_shape[0], input_tensor_shape[1], input_tensor_shape[2])
-    input_image = torch.FloatTensor(input_image)    
+    # the input format is (batch,time_steps,features)
+    input_image = torch.randn(input_tensor_shape[0],input_tensor_shape[1],input_tensor_shape[2],device=device,dtype=tensor_type)
+    input_image = input_image.float().cuda()
 
-    batch_first = True
-    if cell_type == 'LSTM':
-        lstm = LSTM(input_size, hidden_size, num_layers, batch_first)
-    elif cell_type == 'RNN':
-        lstm = RNN(input_size, hidden_size, num_layers, batch_first)
-    elif cell_type == 'GRU':
-        lstm = GRU(input_size, hidden_size, num_layers, batch_first)
+    input_size = input_tensor_shape[2]
+    hidden_size = n_neurons
+
+    # init rnn kernel
+    if cell_type == 'lstm':
+        myRNN = nn.LSTM(input_size, hidden_size, batch_first=True)
+    elif cell_type == 'rnn':
+        myRNN = nn.RNN(input_size, hidden_size, batch_first=True)
+    elif cell_type == 'gru':
+        myRNN = nn.GRU(input_size, hidden_size, batch_first=True)
     else:
-        raise ValueError("Error of input cell_type, please choose one from [RNN, LSTM, GRU]")
+        raise ValueError("Error of input cell_type, please choose one from [rnn, lstm, gru]")
+    # move the kernel to GPU
+    myRNN.cuda()
    
     # resul ops
     if compute_type=="forward":
@@ -147,7 +100,7 @@ def main(input_tensor_shape, cell_type, input_size, hidden_size, num_layers, dty
     print("warming up for {} steps".format(n_warm))
     start = time.time()
     for i in range(n_warm):
-        compfunc(input_image, lstm, run_device)
+        compfunc(input_image, myRNN)
     end = time.time()
     print("done")
     duration = end-start
@@ -163,7 +116,7 @@ def main(input_tensor_shape, cell_type, input_size, hidden_size, num_layers, dty
             cupy.cuda.profiler.start()
             
     for i in range(n_iter):
-        compfunc(input_image, lstm, run_device)
+        compfunc(input_image, myRNN)
         
     if os.environ['PROFILER'] == 'pycuda':
         if have_pycuda:
@@ -182,11 +135,10 @@ def main(input_tensor_shape, cell_type, input_size, hidden_size, num_layers, dty
 if __name__ == '__main__':
     AP = argparse.ArgumentParser()
     AP.add_argument('--input_tensor_shape', type=int, nargs='+', default=[10,32,32], help='the shape of the input tensor')
-    AP.add_argument('--cell_type', type=str, default='LSTM', help='the rnn cell type\
+    AP.add_argument('--cell_type', type=str, default='lstm', help='the rnn cell type\
 ')
-    AP.add_argument('--input_size', type=int, default=32, help='the input size for LSTM')
-    AP.add_argument('--hidden_size', type=int, default=5, help='the hidden size of lstm')
-    AP.add_argument('--num_layers', type=int, default=3, help='the number of layers of lstm')
+    AP.add_argument('--n_neurons', type=int, default=50, help='number of neurons for\
+ the layer')
     AP.add_argument('--dtype', type=str, default='float32', help='the data type')
     AP.add_argument('--num_iterations', type=int, default=100, help='the number of iterations')
     AP.add_argument('--num_warmups', type=int, default=10, help='number of warmup steps')
@@ -200,10 +152,7 @@ if __name__ == '__main__':
     
     main(input_tensor_shape=parsed.input_tensor_shape,
          cell_type=parsed.cell_type,
-         input_size = parsed.input_size,
-         hidden_size=parsed.hidden_size,
-         num_layers=parsed.num_layers,
-         #n_neurons=parsed.n_neurons,
+         n_neurons=parsed.n_neurons,
          dtype=parsed.dtype,
          n_iter=parsed.num_iterations,
          n_warm=parsed.num_warmups,

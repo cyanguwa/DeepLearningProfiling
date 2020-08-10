@@ -107,7 +107,6 @@ def main(input_tensor_shape, data_format, kernel_shape, stride, dtype, n_iter, n
         device = torch.device('cuda:0') 
     else:
         device = torch.device('cpu')
-        
     print("Running on device {}".format(device))
 
     # select commpute type
