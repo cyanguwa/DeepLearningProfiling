@@ -37,46 +37,30 @@ print("Eager execution: {}".format(tf.executing_eagerly()))
 
 
 # @tf.function(experimental_compile=True)
-def rnn1d(input_data, cell_type, n_neurons, dtype):
-    if cell_type == 'rnn':
-        basic_cell = tf.keras.layers.SimpleRNNCell(units=n_neurons)
-    elif cell_type == 'lstm':
-        basic_cell = tf.keras.layers.LSTMCell(units=n_neurons)
-    elif cell_type == 'gru':
-        basic_cell = tf.keras.layers.GRUCell(units=n_neurons)
-    else:
-        raise Exception("cell_type could only be: rnn, lstm or gru!")
-
+def rnn1d(input_data, basic_cell):
     whole_seq_output, final_memory_state, final_carry_state = tf.keras.layers.RNN(basic_cell, return_sequences=True, return_state=True)(input_data)
     return whole_seq_output, final_memory_state, final_carry_state
 
 
 #calibration measurement
-def run_calibrate(input_tensor_shape, cell_type, n_neurons, tensor_type):
-    input_image = tf.keras.backend.random_uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=tensor_type)
+def run_calibrate(input_image, basic_cell):
 #     _ = input_image.numpy()
     return input_image
 
 
 #forward
-def run_forward(input_tensor_shape, cell_type, n_neurons, tensor_type):
-    input_image = tf.keras.backend.random_uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=tensor_type)
-    output_result, states_cur, _ = rnn1d(input_image, cell_type, n_neurons, tensor_type) 
+def run_forward(input_image, basic_cell):
+    output_result, states_cur, _ = rnn1d(input_image, basic_cell) 
 #     _,_ = output_result.numpy(), states_cur.numpy()
     return output_result
 
 
 #backward
-def run_backward(input_tensor_shape, cell_type, n_neurons, tensor_type):
-    input_image = tf.keras.backend.random_uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=tensor_type)
+def run_backward(input_image, basic_cell):
     with tf.GradientTape(persistent=True) as tape:
         tape.watch(input_image)
-        output_result, states_cur, _ = rnn1d(input_image, cell_type, n_neurons, tensor_type)
+        output_result, states_cur, _ = rnn1d(input_image, basic_cell)
     grads = tape.gradient(output_result, input_image)
-#     tvars = tf.trainable_variables()
-#     grads = tape.gradient(output_result,tvars)
-#     opt = tf.keras.optimizers.SGD() 
-#     opt.apply_gradients(zip(grads, mnist_model.trainable_variables))
 
 #     _ = grads.numpy()
     return grads
@@ -119,13 +103,24 @@ def main(input_tensor_shape, cell_type, n_neurons, dtype, n_iter, n_warm, comput
     else:
         raise ValueError("Error, compute_type should be either forward or backward or calibrate")
     
+    if cell_type == 'rnn':
+        basic_cell = tf.keras.layers.SimpleRNNCell(units=n_neurons)
+    elif cell_type == 'lstm':
+        basic_cell = tf.keras.layers.LSTMCell(units=n_neurons)
+    elif cell_type == 'gru':
+        basic_cell = tf.keras.layers.GRUCell(units=n_neurons)
+    else:
+        raise Exception("cell_type could only be: rnn, lstm or gru!")
+    
+    # input tensor
+    input_image = tf.keras.backend.random_uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=tensor_type)
 
     #start session
     print("warming up for {} steps".format(n_warm))
     start = time.time()
     with tf.device(device):
         for i in range(n_warm):
-            compfunc(input_tensor_shape, cell_type, n_neurons, tensor_type)
+            compfunc(input_image, basic_cell)
     end = time.time()
     print("done")
     duration = end-start
@@ -143,7 +138,7 @@ def main(input_tensor_shape, cell_type, n_neurons, dtype, n_iter, n_warm, comput
             
     with tf.device(device):
         for i in range(n_iter):
-            compfunc(input_tensor_shape, cell_type, n_neurons, tensor_type)
+            compfunc(input_image, basic_cell)
 
     #stop profiling
     if os.environ['PROFILER'] == 'pycuda':
@@ -162,7 +157,7 @@ def main(input_tensor_shape, cell_type, n_neurons, dtype, n_iter, n_warm, comput
 
 if __name__ == '__main__':
     AP = argparse.ArgumentParser()
-    AP.add_argument('--input_tensor_shape', type=int, nargs='+', default=[10,32,32], help='the shape of the input tensor, timesteps x batchsize x celldepth')
+    AP.add_argument('--input_tensor_shape', type=int, nargs='+', default=[10,32,32], help='the shape of the input tensor, batchsize x timesteps x celldepth')
     AP.add_argument('--cell_type', type=str, default='lstm', help='the rnn cell type\
 ')
     AP.add_argument('--n_neurons', type=int, default=50, help='number of neurons for\
