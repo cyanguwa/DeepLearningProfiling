@@ -46,17 +46,15 @@ def conv2d(input_data, data_format, weights, stride_, dtype):
 
 
 #calibration measurement
-def run_calibrate(input_tensor_shape, data_format, weights, stride, dtype):
-    #define op
-    input_image = tf.random.uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=dtype)
+def run_calibrate(input_image, data_format, weights, stride, dtype):
     #run the stuff
-    _ = input_image.numpy()
+    output_result = input_image
+    _ = output_result.numpy()
 
 
 #forward
-def run_forward(input_tensor_shape, data_format, weights, stride, dtype):
+def run_forward(input_image, data_format, weights, stride, dtype):
     #define op
-    input_image = tf.random.uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=dtype)
     output_result = conv2d(input_image, data_format, weights, stride, dtype)
     
     #run the stuff
@@ -64,9 +62,7 @@ def run_forward(input_tensor_shape, data_format, weights, stride, dtype):
 
 
 #backward
-def run_backward(input_tensor_shape, data_format, weights, stride, dtype):
-    #define op, under tape
-    input_image = tf.random.uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=dtype)
+def run_backward(input_image, data_format, weights, stride, dtype):
     with tf.GradientTape(persistent=True) as tape:
         tape.watch(input_image)
         output_result = conv2d(input_image, data_format, weights, stride, dtype)
@@ -113,6 +109,9 @@ def main(input_tensor_shape, data_format, kernel_shape, stride, dtype, n_iter, n
     else:
         raise ValueError("Error, compute_type should be either forward or backward or calibrate")
     
+    #input tensor
+    input_image = tf.random.uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=dtype)
+
     #we might need that
     with tf.device(device):
         weights = tf.Variable(tf.random.truncated_normal(kernel_shape, stddev=0.03, dtype=dtype), dtype=dtype)
@@ -122,7 +121,7 @@ def main(input_tensor_shape, data_format, kernel_shape, stride, dtype, n_iter, n
     start = time.time()
     with tf.device(device):
         for i in range(n_warm):
-            compfunc(input_tensor_shape, data_format, weights, stride, tensor_type)
+            compfunc(input_image, data_format, weights, stride, tensor_type)
     end = time.time()
     print("done")
     duration = end-start
@@ -139,7 +138,7 @@ def main(input_tensor_shape, data_format, kernel_shape, stride, dtype, n_iter, n
             cupy.cuda.profiler.start()
     with tf.device(device):
         for i in range(n_iter):
-            compfunc(input_tensor_shape, data_format, weights, stride, tensor_type)
+            compfunc(input_image, data_format, weights, stride, tensor_type)
 
     #stop profiling
     if os.environ['PROFILER'] == 'pycuda':
