@@ -21,7 +21,7 @@ export OMP_PROC_BIND=spread
 sruncmd="srun -N ${SLURM_NNODES} -n $(( ${SLURM_NNODES} * ${rankspernode} )) --cpu_bind=cores"
 
 #create run dir
-run_dir=$PWD/tf_cnn_kernels_nsight/rnn1d-pt/$SLURM_JOBID/
+run_dir=$PWD/pt_cnn_kernels_nsight/rnn1d-pt/$SLURM_JOBID/
 mkdir -p ${run_dir}
 
 #copy relevant files

@@ -67,7 +67,6 @@ def main(input_tensor_shape, cell_type, n_neurons, dtype, n_iter, n_warm, comput
         
     # the input format is (batch,time_steps,features)
     input_image = torch.randn(input_tensor_shape[0],input_tensor_shape[1],input_tensor_shape[2],device=device,dtype=tensor_type)
-    input_image = input_image.float().cuda()
 
     input_size = input_tensor_shape[2]
     hidden_size = n_neurons
@@ -81,6 +80,8 @@ def main(input_tensor_shape, cell_type, n_neurons, dtype, n_iter, n_warm, comput
         myRNN = nn.GRU(input_size, hidden_size, batch_first=True)
     else:
         raise ValueError("Error of input cell_type, please choose one from [rnn, lstm, gru]")
+    if (tensor_type == torch.float16):
+        myRNN = myRNN.half()
     # move the kernel to GPU
     myRNN.cuda()
    
