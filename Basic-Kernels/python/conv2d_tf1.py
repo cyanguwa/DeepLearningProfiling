@@ -31,13 +31,7 @@ else:
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 
 
-def conv2d(input_data, data_format, kernel_shape, stride_, dtype):
-    weights = tf.Variable(tf.random.truncated_normal(kernel_shape, stddev=0.03, dtype=dtype), dtype=dtype)
-    if data_format == "NCHW":
-        input_data = tf.transpose(input_data, [0,3,1,2])
-        strides = [1,1,stride_, stride_]
-    else:
-        strides = [1,stride_,stride_,1]
+def conv2d(input_data, data_format, weights, kernel_shape, strides, dtype):
     output_data = tf.nn.conv2d(input_data, weights, strides=strides, padding='SAME', data_format=data_format)
     return output_data
 
@@ -63,14 +57,18 @@ def main(input_tensor_shape, data_format, kernel_shape, stride, dtype, n_iter, n
     else:
         agg_dev = gpu_dev
 
-    with tf.device(agg_dev):
-        #input tensor
-        input_image = tf.random.uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=dtype) 
+    weights = tf.Variable(tf.random.truncated_normal(kernel_shape, stddev=0.03, dtype=dtype), dtype=dtype)
+
+    #input tensor
+    input_image = tf.random.uniform(shape=input_tensor_shape, minval=0., maxval=1., dtype=dtype) 
+    print(input_image[0-2])
+    #strides
+    strides = [1,stride,stride,1]
         
     with tf.device(gpu_dev):
         
         #create network
-        output_result = conv2d(input_image, data_format, kernel_shape, stride, tensor_type) 
+        output_result = conv2d(input_image, data_format, weights, kernel_shape, strides, tensor_type) 
         
         #init ops
         init_op = tf.compat.v1.initializers.global_variables()
@@ -88,8 +86,8 @@ def main(input_tensor_shape, data_format, kernel_shape, stride, dtype, n_iter, n
 #             exec_op = opt.minimize(output_result)
 
     elif compute_type=="calibrate":
-        with tf.device(gpu_dev):
-            exec_op = input_image
+        #with tf.device(gpu_dev):
+        exec_op = input_image
     else:
         raise ValueError("Error, compute_type should be either forward or backward or calibrate")
    
