@@ -50,46 +50,27 @@ else:
 #warnings.simplefilter('ignore')
 
 #calibration measurement
-def run_calibrate(input_image, weights, biases, stride, kernel_shape):
-    # init the conv2d kernel
-    conv2d = nn.Conv2d(in_channels = kernel_shape[2], out_channels = kernel_shape[3], kernel_size = kernel_shape[0], stride=stride)
-    conv2d.weight = torch.nn.Parameter(weights)
-    conv2d.bias = torch.nn.Parameter(biases)
-    # move the kernel to GPU
-    conv2d.cuda()
+def run_calibrate(input_image, func):
+    output_result  = input_image
 
 
 #forward
-def run_forward(input_image, weights, biases, stride, kernel_shape):
-    # init the conv2d kernel
-    conv2d = nn.Conv2d(in_channels = kernel_shape[2], out_channels = kernel_shape[3], kernel_size = kernel_shape[0], stride=stride)
-    conv2d.weight = torch.nn.Parameter(weights)
-    conv2d.bias = torch.nn.Parameter(biases)
-    # move the kernel to GPU
-    conv2d.cuda()
-
-    output_result = conv2d(input_image)
+def run_forward(input_image, func):
+    output_result = func(input_image)
 
 
 #backward
-def run_backward(input_image, weights, biases, stride, kernel_shape):
-    # init the conv2d kernel
-    conv2d = nn.Conv2d(in_channels = kernel_shape[2], out_channels = kernel_shape[3], kernel_size = kernel_shape[0], stride=stride)
-    conv2d.weight = torch.nn.Parameter(weights)
-    conv2d.bias = torch.nn.Parameter(biases)
-    # move the kernel to GPU
-    conv2d.cuda()
+def run_backward(input_image, func):
+    output_result = func(input_image)
 
-    output_result = conv2d(input_image)
-
-    lr = 0.01
-    momentum = 0.5
-    optimizer = optim.SGD(conv2d.parameters(), lr=lr, momentum=momentum)
-    optimizer.zero_grad()
+    #lr = 0.01
+    #momentum = 0.5
+    #optimizer = optim.SGD(conv2d.parameters(), lr=lr, momentum=momentum)
+    #optimizer.zero_grad()
 
     res = torch.sum(output_result)
     res.backward()
-    optimizer.step()
+    #optimizer.step()
 
 
 def main(input_tensor_shape, data_format, kernel_shape, stride, dtype, n_iter, n_warm, compute_type):  
@@ -130,11 +111,18 @@ def main(input_tensor_shape, data_format, kernel_shape, stride, dtype, n_iter, n
     # the input format is NHWC, pytorch requires NCHW thus we do a transpose here
     input_image = torch.randn(input_tensor_shape[0],input_tensor_shape[3],input_tensor_shape[1],input_tensor_shape[2],device=device,dtype=tensor_type)
 
+    # init the conv2d kernel
+    conv2d = nn.Conv2d(in_channels = kernel_shape[2], out_channels = kernel_shape[3], kernel_size = kernel_shape[0], stride=stride)
+    conv2d.weight = torch.nn.Parameter(weights)
+    conv2d.bias = torch.nn.Parameter(biases)
+    # move the kernel to GPU
+    conv2d.cuda()
+
     #start session
     print("warming up for {} steps".format(n_warm))
     start = time.time()
     for i in range(n_warm):
-        compfunc(input_image, weights, biases, stride, kernel_shape)
+        compfunc(input_image, conv2d)
     end = time.time()
     print("done")
     duration = end-start
@@ -151,7 +139,7 @@ def main(input_tensor_shape, data_format, kernel_shape, stride, dtype, n_iter, n
             cupy.cuda.profiler.start()
             
     for i in range(n_iter):
-        compfunc(input_image, weights, biases, stride, kernel_shape)
+        compfunc(input_image, conv2d)
 
     #stop profiling
     if os.environ['PROFILER'] == 'pycuda':
